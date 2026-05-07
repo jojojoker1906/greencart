@@ -5,101 +5,204 @@ import { assets } from "../assets/assets";
 import ProductCard from "../components/ProductCard";
 
 const ProductDetails = () => {
+  const { products, navigate, currency, addToCart } = useAppContext();
+  const { id } = useParams();
 
-    const {products, navigate, currency, addToCart} = useAppContext()
-    const {id} = useParams()
-    const [relatedProducts, setRelatedProducts] = useState([]);
-    const [thumbnail, setThumbnail] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [thumbnail, setThumbnail] = useState(null);
 
-    const product = products.find((item)=> item._id === id);
+  const product = products.find((item) => item._id === id);
 
-    useEffect(()=>{
-        if(products.length > 0){
-            let productsCopy = products.slice();
-            productsCopy = productsCopy.filter((item)=> product.category === item.category)
-            setRelatedProducts(productsCopy.slice(0,5))
-        }
-    },[products])
+  useEffect(() => {
+    if (products.length > 0 && product) {
+      let productsCopy = products
+        .filter((item) => product.category === item.category)
+        .slice(0, 5);
 
-    useEffect(()=>{
-        setThumbnail(product?.image[0] ? product.image[0] : null)
-    },[product])
+      setRelatedProducts(productsCopy);
+    }
+  }, [products, product]);
 
+  useEffect(() => {
+    if (product?.image?.[0]) {
+      setThumbnail(product.image[0]);
+    }
+  }, [product]);
 
-    return product && (
-        <div className="mt-12">
-            <p>
-                <Link to={"/"}>Home</Link> /
-                <Link to={"/products"}> Products</Link> /
-                <Link to={`/products/${product.category.toLowerCase()}`}> {product.category}</Link> /
-                <span className="text-primary"> {product.name}</span>
-            </p>
+  return (
+    product && (
+      <section className="relative min-h-screen bg-gradient-to-br from-[#021a10] via-[#0b2d1f] to-[#157347] py-24 px-6 md:px-16 lg:px-24 xl:px-32 overflow-hidden">
 
-            <div className="flex flex-col md:flex-row gap-16 mt-4">
-                <div className="flex gap-3">
-                    <div className="flex flex-col gap-3">
-                        {product.image.map((image, index) => (
-                            <div key={index} onClick={() => setThumbnail(image)} className="border max-w-24 border-gray-500/30 rounded overflow-hidden cursor-pointer" >
-                                <img src={image} alt={`Thumbnail ${index + 1}`} />
-                            </div>
-                        ))}
-                    </div>
+        {/* Ambient Glow */}
+        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-green-400/10 rounded-full blur-[180px]"></div>
+        <div className="absolute bottom-0 right-0 w-[700px] h-[700px] bg-emerald-300/10 rounded-full blur-[220px]"></div>
 
-                    <div className="border border-gray-500/30 max-w-100 rounded overflow-hidden">
-                        <img src={thumbnail} alt="Selected product" />
-                    </div>
-                </div>
+        <div className="relative z-10">
 
-                <div className="text-sm w-full md:w-1/2">
-                    <h1 className="text-3xl font-medium">{product.name}</h1>
+          {/* Breadcrumb */}
+          <p className="text-green-100/70 text-sm mb-10">
+            <Link to="/">Home</Link> /{" "}
+            <Link to="/products">Products</Link> /{" "}
+            <Link to={`/products/${product.category.toLowerCase()}`}>
+              {product.category}
+            </Link>{" "}
+            / <span className="text-white">{product.name}</span>
+          </p>
 
-                    <div className="flex items-center gap-0.5 mt-1">
-                        {Array(5).fill('').map((_, i) => (
-                          <img src={i<4 ? assets.star_icon : assets.star_dull_icon} alt="" className="md:w-4 w-3.5"/>
-                             
-                        ))}
-                        <p className="text-base ml-2">(4)</p>
-                    </div>
+          {/* Product Section */}
+          <div className="grid md:grid-cols-2 gap-20 items-center">
 
-                    <div className="mt-6">
-                        <p className="text-gray-500/70 line-through">MRP: {currency}{product.price}</p>
-                        <p className="text-2xl font-medium">MRP: {currency}{product.offerPrice}</p>
-                        <span className="text-gray-500/70">(inclusive of all taxes)</span>
-                    </div>
+            {/* Images */}
+            <div className="flex gap-5">
 
-                    <p className="text-base font-medium mt-6">About Product</p>
-                    <ul className="list-disc ml-4 text-gray-500/70">
-                        {product.description.map((desc, index) => (
-                            <li key={index}>{desc}</li>
-                        ))}
-                    </ul>
+              <div className="flex flex-col gap-4">
+                {product.image.map((image, index) => (
+                  <div
+                    key={index}
+                    onClick={() => setThumbnail(image)}
+                    className={`cursor-pointer rounded-2xl overflow-hidden border transition-all duration-300 ${
+                      thumbnail === image
+                        ? "border-white scale-105"
+                        : "border-white/10 hover:border-white/30"
+                    }`}
+                  >
+                    <img
+                      src={image}
+                      alt=""
+                      className="w-24 h-24 object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
 
-                    <div className="flex items-center mt-10 gap-4 text-base">
-                        <button onClick={()=> addToCart(product._id)} className="w-full py-3.5 cursor-pointer font-medium bg-gray-100 text-gray-800/80 hover:bg-gray-200 transition" >
-                            Add to Cart
-                        </button>
-                        <button onClick={()=> {addToCart(product._id); navigate("/cart")}} className="w-full py-3.5 cursor-pointer font-medium bg-primary text-white hover:bg-primary-dull transition" >
-                            Buy now
-                        </button>
-                    </div>
-                </div>
+              <div className="flex-1 bg-white/10 backdrop-blur-2xl rounded-[40px] border border-white/10 p-8 flex justify-center items-center">
+                <img
+                  src={thumbnail}
+                  alt={product.name}
+                  className="max-h-[550px] object-contain hover:scale-105 transition duration-500"
+                />
+              </div>
+
             </div>
-            {/* ---------- related products -------------- */}
-            <div className="flex flex-col items-center mt-20">
-                <div className="flex flex-col items-center w-max">
-                    <p className="text-3xl font-medium">Related Products</p>
-                    <div className="w-20 h-0.5 bg-primary rounded-full mt-2"></div>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-6 lg:grid-cols-5 mt-6 w-full">
-                    {relatedProducts.filter((product)=>product.inStock).map((product, index)=>(
-                        <ProductCard key={index} product={product}/>
-                    ))}
-                </div>
-                <button onClick={()=> {navigate('/products'); scrollTo(0,0)}} className="mx-auto cursor-pointer px-12 my-16 py-2.5 border rounded text-primary hover:bg-primary/10 transition">See more</button>
+
+            {/* Product Info */}
+            <div>
+
+              <p className="uppercase tracking-[0.35em] text-green-200 text-sm font-semibold mb-4">
+                {product.category}
+              </p>
+
+              <h1 className="text-5xl md:text-6xl font-black text-white leading-tight">
+                {product.name}
+              </h1>
+
+              {/* Rating */}
+              <div className="flex items-center gap-1 mt-5">
+                {Array(5)
+                  .fill("")
+                  .map((_, i) => (
+                    <img
+                      key={i}
+                      src={i < 4 ? assets.star_icon : assets.star_dull_icon}
+                      alt=""
+                      className="w-5"
+                    />
+                  ))}
+                <p className="text-green-100 ml-3">(4 Reviews)</p>
+              </div>
+
+              {/* Price */}
+              <div className="mt-8">
+                <p className="text-green-100/60 line-through text-lg">
+                  {currency}{product.price}
+                </p>
+
+                <p className="text-4xl font-black text-white mt-1">
+                  {currency}{product.offerPrice}
+                </p>
+
+                <span className="text-green-100/60 text-sm">
+                  Inclusive of all taxes
+                </span>
+              </div>
+
+              {/* Description */}
+              <div className="mt-10">
+                <p className="text-xl font-bold text-white mb-4">
+                  About Product
+                </p>
+
+                <ul className="space-y-3 text-green-100/75">
+                  {product.description.map((desc, index) => (
+                    <li key={index} className="flex gap-3">
+                      <span className="text-white">•</span>
+                      {desc}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex flex-col sm:flex-row gap-5 mt-12">
+
+                <button
+                  onClick={() => addToCart(product._id)}
+                  className="flex-1 py-5 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-white font-bold hover:bg-white/15 transition"
+                >
+                  Add to Cart
+                </button>
+
+                <button
+                  onClick={() => {
+                    addToCart(product._id);
+                    navigate("/cart");
+                  }}
+                  className="flex-1 py-5 bg-white text-green-900 rounded-full font-black hover:scale-105 transition-all duration-300"
+                >
+                  Buy Now
+                </button>
+
+              </div>
+
             </div>
+          </div>
+
+          {/* Related Products */}
+          <div className="mt-32">
+
+            <div className="mb-14">
+              <p className="uppercase tracking-[0.35em] text-green-200 text-sm font-semibold mb-4">
+                You May Also Like
+              </p>
+
+              <h2 className="text-5xl font-black text-white">
+                Related Products
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 justify-items-center">
+              {relatedProducts
+                .filter((product) => product.inStock)
+                .map((product, index) => (
+                  <ProductCard key={index} product={product} />
+                ))}
+            </div>
+
+            <button
+              onClick={() => {
+                navigate("/products");
+                scrollTo(0, 0);
+              }}
+              className="mt-16 px-10 py-4 bg-white text-green-900 rounded-full font-bold hover:scale-105 transition-all"
+            >
+              View More
+            </button>
+
+          </div>
         </div>
-    );
+      </section>
+    )
+  );
 };
 
-
-export default ProductDetails
+export default ProductDetails;
